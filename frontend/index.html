@@ -1,0 +1,263 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>TaskFlow API — Backend Intern Assignment</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600&family=Syne:wght@400;600;700;800&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="style.css" />
+</head>
+<body>
+<div class="site">
+
+  <!-- HEADER -->
+  <div class="header">
+    <div class="header-top">
+      <div class="status-dot"></div>
+      <span class="badge">v1.0.0</span>
+      <span class="badge badge-purple">JWT Auth</span>
+      <span class="badge badge-amber">RBAC</span>
+      <span class="badge badge-red">REST API</span>
+    </div>
+    <h1>Task<span>Flow</span> API</h1>
+    <p class="subtitle">Backend Intern Assignment · Node.js + PostgreSQL · <em>All systems operational</em></p>
+  </div>
+
+  <!-- TABS -->
+  <div class="tabs">
+    <button class="tab active" onclick="switchTab('overview',this)">overview</button>
+    <button class="tab" onclick="switchTab('schema',this)">db schema</button>
+    <button class="tab" onclick="switchTab('api',this)">api docs</button>
+    <button class="tab" onclick="switchTab('demo',this)">live demo</button>
+    <button class="tab" onclick="switchTab('scale',this)">scalability</button>
+    <button class="tab" onclick="switchTab('structure',this)">project tree</button>
+  </div>
+
+  <!-- ── OVERVIEW ── -->
+  <div class="panel active" id="tab-overview">
+    <p class="section-label">core features</p>
+    <div class="card-grid">
+      <div class="card accent-green"><div class="card-icon">🔐</div><h3>Auth System</h3><p>JWT access + refresh tokens, bcrypt password hashing, token blacklist on logout, secure cookie handling.</p></div>
+      <div class="card accent-purple"><div class="card-icon">🛡️</div><h3>Role-Based Access</h3><p>Two roles: user and admin. Middleware guards protect routes. Admins can manage all tasks + users.</p></div>
+      <div class="card accent-amber"><div class="card-icon">📋</div><h3>Tasks CRUD</h3><p>Full create/read/update/delete on tasks entity with filtering, pagination, and status management.</p></div>
+      <div class="card accent-red"><div class="card-icon">🔬</div><h3>Validation + Docs</h3><p>Zod schema validation, Swagger/OpenAPI docs at /api/docs, structured error responses with codes.</p></div>
+    </div>
+
+    <p class="section-label">tech stack</p>
+    <div class="card">
+      <div class="stack-split">
+        <div>
+          <p class="stack-label">BACKEND</p>
+          <div class="stack-row">
+            <span class="chip hi">Node.js</span><span class="chip hi">Express 5</span><span class="chip hi">TypeScript</span>
+            <span class="chip">PostgreSQL</span><span class="chip">Prisma ORM</span><span class="chip">JWT</span>
+            <span class="chip">bcrypt</span><span class="chip">Zod</span><span class="chip">Swagger</span>
+          </div>
+        </div>
+        <div>
+          <p class="stack-label">FRONTEND / OPS</p>
+          <div class="stack-row">
+            <span class="chip hi">React 18</span><span class="chip hi">Vite</span><span class="chip">Docker</span>
+            <span class="chip">Redis</span><span class="chip">Jest</span><span class="chip">GitHub Actions</span><span class="chip">Nginx</span>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <p class="section-label" style="margin-top:1.5rem">api versioning</p>
+    <div class="card">
+      <p class="versioning-note">
+        All routes prefixed with <span class="c-green">/api/v1/</span> — enabling parallel future versions.<br>
+        Current: <span class="c-purple">v1</span> · Docs: <span class="c-red">/api/docs</span> · Health: <span class="c-amber">/api/health</span>
+      </p>
+    </div>
+  </div>
+
+  <!-- ── DB SCHEMA ── -->
+  <div class="panel" id="tab-schema">
+    <p class="section-label">postgresql schema · 3 tables</p>
+    <div class="schema-wrap">
+      <div class="schema-table">
+        <div class="schema-header"><span>users</span><small>primary entity</small></div>
+        <div class="schema-row pk"><span class="col-name">id</span><span class="col-type">uuid</span><span class="col-note"><span class="pk-badge">PK</span> gen_random_uuid()</span></div>
+        <div class="schema-row"><span class="col-name">name</span><span class="col-type">varchar(100)</span><span class="col-note">NOT NULL</span></div>
+        <div class="schema-row"><span class="col-name">email</span><span class="col-type">varchar(255)</span><span class="col-note">UNIQUE, NOT NULL</span></div>
+        <div class="schema-row"><span class="col-name">password_hash</span><span class="col-type">text</span><span class="col-note">bcrypt, NOT NULL</span></div>
+        <div class="schema-row"><span class="col-name">role</span><span class="col-type">enum</span><span class="col-note">user | admin</span></div>
+        <div class="schema-row"><span class="col-name">is_verified</span><span class="col-type">boolean</span><span class="col-note">default false</span></div>
+        <div class="schema-row"><span class="col-name">created_at</span><span class="col-type">timestamp</span><span class="col-note">DEFAULT now()</span></div>
+        <div class="schema-row"><span class="col-name">updated_at</span><span class="col-type">timestamp</span><span class="col-note">auto-updated</span></div>
+      </div>
+      <div class="schema-table">
+        <div class="schema-header"><span>tasks</span><small>secondary entity</small></div>
+        <div class="schema-row pk"><span class="col-name">id</span><span class="col-type">uuid</span><span class="col-note"><span class="pk-badge">PK</span></span></div>
+        <div class="schema-row fk"><span class="col-name">user_id</span><span class="col-type">uuid</span><span class="col-note"><span class="fk-badge">FK</span> → users</span></div>
+        <div class="schema-row"><span class="col-name">title</span><span class="col-type">varchar(200)</span><span class="col-note">NOT NULL</span></div>
+        <div class="schema-row"><span class="col-name">description</span><span class="col-type">text</span><span class="col-note">nullable</span></div>
+        <div class="schema-row"><span class="col-name">status</span><span class="col-type">enum</span><span class="col-note">todo|in_progress|done</span></div>
+        <div class="schema-row"><span class="col-name">priority</span><span class="col-type">enum</span><span class="col-note">low|medium|high</span></div>
+        <div class="schema-row"><span class="col-name">due_date</span><span class="col-type">timestamp</span><span class="col-note">nullable</span></div>
+        <div class="schema-row"><span class="col-name">created_at</span><span class="col-type">timestamp</span><span class="col-note">DEFAULT now()</span></div>
+      </div>
+      <div class="schema-table">
+        <div class="schema-header"><span>refresh_tokens</span><small>auth</small></div>
+        <div class="schema-row pk"><span class="col-name">id</span><span class="col-type">uuid</span><span class="col-note"><span class="pk-badge">PK</span></span></div>
+        <div class="schema-row fk"><span class="col-name">user_id</span><span class="col-type">uuid</span><span class="col-note"><span class="fk-badge">FK</span> → users</span></div>
+        <div class="schema-row"><span class="col-name">token_hash</span><span class="col-type">text</span><span class="col-note">hashed token</span></div>
+        <div class="schema-row"><span class="col-name">expires_at</span><span class="col-type">timestamp</span><span class="col-note">7d TTL</span></div>
+        <div class="schema-row"><span class="col-name">is_revoked</span><span class="col-type">boolean</span><span class="col-note">default false</span></div>
+        <div class="schema-row"><span class="col-name">created_at</span><span class="col-type">timestamp</span><span class="col-note">DEFAULT now()</span></div>
+      </div>
+    </div>
+    <div class="schema-note">Indexes: users(email), tasks(user_id), tasks(status), tasks(created_at DESC) · Cascade: user → tasks, user → refresh_tokens</div>
+  </div>
+
+  <!-- ── API DOCS ── -->
+  <div class="panel" id="tab-api">
+    <p class="section-label">REST endpoints · /api/v1</p>
+
+    <div class="api-group">
+      <div class="api-group-title">Auth routes · /auth</div>
+      <div class="endpoint"><div class="ep-head" onclick="toggleEp(this)"><span class="method m-post">POST</span><span class="ep-path">/api/v1/auth/register</span><span class="ep-desc">register new user</span></div><div class="ep-body"><div class="code-block"><span class="c">// Body</span>
+{ <span class="k">"name"</span>: <span class="s">"Ada Lovelace"</span>, <span class="k">"email"</span>: <span class="s">"ada@example.com"</span>, <span class="k">"password"</span>: <span class="s">"Str0ng!Pass"</span> }
+<span class="c">// 201</span>
+{ <span class="k">"success"</span>: <span class="n">true</span>, <span class="k">"data"</span>: { <span class="k">"id"</span>: <span class="s">"uuid"</span>, <span class="k">"email"</span>: <span class="s">"..."</span>, <span class="k">"role"</span>: <span class="s">"user"</span> } }</div></div></div>
+      <div class="endpoint"><div class="ep-head" onclick="toggleEp(this)"><span class="method m-post">POST</span><span class="ep-path">/api/v1/auth/login</span><span class="ep-desc">returns JWT pair</span></div><div class="ep-body"><div class="code-block"><span class="c">// Body</span>
+{ <span class="k">"email"</span>: <span class="s">"ada@example.com"</span>, <span class="k">"password"</span>: <span class="s">"Str0ng!Pass"</span> }
+<span class="c">// 200</span>
+{ <span class="k">"accessToken"</span>: <span class="s">"eyJ..."</span>, <span class="k">"refreshToken"</span>: <span class="s">"eyJ..."</span>, <span class="k">"expiresIn"</span>: <span class="n">900</span> }</div></div></div>
+      <div class="endpoint"><div class="ep-head" onclick="toggleEp(this)"><span class="method m-post">POST</span><span class="ep-path">/api/v1/auth/refresh</span><span class="ep-desc">rotate access token</span></div><div class="ep-body"><div class="code-block">{ <span class="k">"refreshToken"</span>: <span class="s">"eyJ..."</span> }  →  { <span class="k">"accessToken"</span>: <span class="s">"eyJ..."</span> }</div></div></div>
+      <div class="endpoint"><div class="ep-head" onclick="toggleEp(this)"><span class="method m-post">POST</span><span class="ep-path">/api/v1/auth/logout</span><span class="ep-desc">revoke token</span><span class="ep-auth">JWT</span></div><div class="ep-body"><div class="code-block">Authorization: Bearer &lt;token&gt;  →  204 No Content</div></div></div>
+    </div>
+
+    <div class="api-group">
+      <div class="api-group-title">User routes · /users</div>
+      <div class="endpoint"><div class="ep-head" onclick="toggleEp(this)"><span class="method m-get">GET</span><span class="ep-path">/api/v1/users/me</span><span class="ep-desc">current user profile</span><span class="ep-auth">JWT</span></div><div class="ep-body"><div class="code-block">{ <span class="k">"id"</span>: <span class="s">"uuid"</span>, <span class="k">"name"</span>: <span class="s">"Ada"</span>, <span class="k">"email"</span>: <span class="s">"..."</span>, <span class="k">"role"</span>: <span class="s">"user"</span> }</div></div></div>
+      <div class="endpoint"><div class="ep-head" onclick="toggleEp(this)"><span class="method m-get">GET</span><span class="ep-path">/api/v1/users</span><span class="ep-desc">list all users</span><span class="ep-admin">ADMIN</span></div><div class="ep-body"><div class="code-block"><span class="c">// ?page=1&limit=20&role=user</span>
+{ <span class="k">"data"</span>: [...], <span class="k">"pagination"</span>: { <span class="k">"page"</span>: <span class="n">1</span>, <span class="k">"total"</span>: <span class="n">42</span> } }</div></div></div>
+    </div>
+
+    <div class="api-group">
+      <div class="api-group-title">Task routes · /tasks</div>
+      <div class="endpoint"><div class="ep-head" onclick="toggleEp(this)"><span class="method m-post">POST</span><span class="ep-path">/api/v1/tasks</span><span class="ep-desc">create task</span><span class="ep-auth">JWT</span></div><div class="ep-body"><div class="code-block">{ <span class="k">"title"</span>: <span class="s">"Build auth"</span>, <span class="k">"priority"</span>: <span class="s">"high"</span>, <span class="k">"dueDate"</span>: <span class="s">"2025-06-01"</span> }  →  201</div></div></div>
+      <div class="endpoint"><div class="ep-head" onclick="toggleEp(this)"><span class="method m-get">GET</span><span class="ep-path">/api/v1/tasks</span><span class="ep-desc">list my tasks</span><span class="ep-auth">JWT</span></div><div class="ep-body"><div class="code-block"><span class="c">// ?status=todo&priority=high&page=1&limit=10&sort=dueDate</span>
+{ <span class="k">"data"</span>: [...], <span class="k">"pagination"</span>: {…} }</div></div></div>
+      <div class="endpoint"><div class="ep-head" onclick="toggleEp(this)"><span class="method m-get">GET</span><span class="ep-path">/api/v1/tasks/:id</span><span class="ep-desc">get by id</span><span class="ep-auth">JWT</span></div><div class="ep-body"><div class="code-block"><span class="c">// 404 if not found · 403 if not owner (unless admin)</span></div></div></div>
+      <div class="endpoint"><div class="ep-head" onclick="toggleEp(this)"><span class="method m-patch">PATCH</span><span class="ep-path">/api/v1/tasks/:id</span><span class="ep-desc">update task</span><span class="ep-auth">JWT</span></div><div class="ep-body"><div class="code-block">{ <span class="k">"status"</span>: <span class="s">"in_progress"</span>, <span class="k">"priority"</span>: <span class="s">"medium"</span> }  →  200 updated task</div></div></div>
+      <div class="endpoint"><div class="ep-head" onclick="toggleEp(this)"><span class="method m-del">DEL</span><span class="ep-path">/api/v1/tasks/:id</span><span class="ep-desc">delete task</span><span class="ep-auth">JWT</span></div><div class="ep-body"><div class="code-block"><span class="c">// Owner or admin only → 204 No Content</span></div></div></div>
+      <div class="endpoint"><div class="ep-head" onclick="toggleEp(this)"><span class="method m-get">GET</span><span class="ep-path">/api/v1/tasks/all</span><span class="ep-desc">all users' tasks</span><span class="ep-admin">ADMIN</span></div><div class="ep-body"><div class="code-block">{ <span class="k">"data"</span>: [{ …task, <span class="k">"user"</span>: { <span class="k">"id"</span>:…, <span class="k">"name"</span>:… } }] }</div></div></div>
+    </div>
+
+    <div class="stack-row" style="margin-top:.5rem">
+      <span class="chip hi">Swagger UI → /api/docs</span>
+      <span class="chip">OpenAPI 3.0 spec</span>
+      <span class="chip">Postman collection in /docs</span>
+    </div>
+  </div>
+
+  <!-- ── LIVE DEMO ── -->
+  <div class="panel" id="tab-demo">
+    <p class="section-label">simulated frontend demo · state runs in-browser</p>
+    <div class="demo-split">
+      <div class="demo-panel">
+        <h3 id="auth-mode-title">// register</h3>
+        <div id="auth-form">
+          <div class="form-group" id="name-group"><label>full name</label><input type="text" id="reg-name" placeholder="Ada Lovelace" /></div>
+          <div class="form-group"><label>email</label><input type="email" id="auth-email" placeholder="ada@example.com" /></div>
+          <div class="form-group"><label>password</label><input type="password" id="auth-pass" placeholder="min 8 chars" /></div>
+          <div class="form-group" id="role-group"><label>role (demo)</label><select id="auth-role"><option value="user">user</option><option value="admin">admin</option></select></div>
+          <button class="btn btn-green" onclick="doAuth()">register →</button>
+          <button class="btn btn-purple" onclick="toggleAuthMode()">switch to login ↔</button>
+        </div>
+        <div class="resp-box" id="auth-response">// response will appear here</div>
+        <div id="token-area" style="display:none">
+          <div class="token-display" id="token-display"></div>
+          <button class="btn btn-red" onclick="doLogout()">logout</button>
+        </div>
+      </div>
+      <div class="demo-panel">
+        <h3>// task dashboard</h3>
+        <div id="dashboard-locked">🔒 login to access dashboard</div>
+        <div id="dashboard-content" style="display:none">
+          <div class="task-controls">
+            <input type="text" id="new-task" placeholder="new task title..." />
+            <select id="task-priority"><option>high</option><option selected>medium</option><option>low</option></select>
+            <button class="btn btn-green btn-sm" onclick="addTask()">+ add</button>
+          </div>
+          <div id="task-list"></div>
+          <div id="role-badge-area" style="margin-top:10px"></div>
+        </div>
+      </div>
+    </div>
+    <div class="demo-note"><span class="c-green">note:</span> simulation only — production calls <span class="c-purple">/api/v1/auth</span> & <span class="c-purple">/api/v1/tasks</span> with real JWTs stored in httpOnly cookies.</div>
+  </div>
+
+  <!-- ── SCALABILITY ── -->
+  <div class="panel" id="tab-scale">
+    <p class="section-label">scalability architecture note</p>
+    <div class="scale-grid">
+      <div class="scale-card"><div class="scale-icon">⚡</div><h4>Horizontal Scaling</h4><ul><li>Stateless JWT → any instance handles any request</li><li>Load balancer (Nginx / AWS ALB)</li><li>PM2 cluster mode for multi-core</li><li>Docker + Kubernetes for auto-scale</li></ul></div>
+      <div class="scale-card"><div class="scale-icon">💾</div><h4>Caching (Redis)</h4><ul><li>Cache user sessions and profiles</li><li>Rate-limit counters per IP/user</li><li>Refresh token blacklist TTL</li><li>Task list cache (invalidate on write)</li></ul></div>
+      <div class="scale-card"><div class="scale-icon">🗄️</div><h4>Database</h4><ul><li>Connection pooling (PgBouncer)</li><li>Read replicas for GET endpoints</li><li>Indexed on email, user_id, status</li><li>Migrations via Prisma</li></ul></div>
+      <div class="scale-card"><div class="scale-icon">🧩</div><h4>Microservice Path</h4><ul><li>Auth service → separate container</li><li>Task service → own DB + port</li><li>API Gateway for routing/auth</li><li>Message queue (Bull/RabbitMQ)</li></ul></div>
+      <div class="scale-card"><div class="scale-icon">🔍</div><h4>Observability</h4><ul><li>Winston structured logging</li><li>Request ID tracing (UUID per req)</li><li>Prometheus metrics endpoint</li><li>Health check at /api/health</li></ul></div>
+      <div class="scale-card"><div class="scale-icon">🛡️</div><h4>Security Hardening</h4><ul><li>Helmet.js for HTTP headers</li><li>express-rate-limit per IP</li><li>Input sanitized via Zod</li><li>CORS whitelist config</li></ul></div>
+    </div>
+    <div class="arch-note"><strong>Current:</strong> monolith → <strong>next step:</strong> extract auth into a dedicated microservice using JWT RS256 so the task service can verify tokens independently. Add message broker for async notifications, CDN for static assets, and PostgreSQL → Citus for distributed queries.</div>
+  </div>
+
+  <!-- ── PROJECT TREE ── -->
+  <div class="panel" id="tab-structure">
+    <p class="section-label">project structure · scalable module layout</p>
+    <div class="folder-tree">
+      <div class="tree-line"><span class="tree-folder">taskflow-api/</span></div>
+      <div class="tree-line"><span class="i1"></span><span class="tree-folder">backend/src/</span></div>
+      <div class="tree-line"><span class="i2"></span><span class="tree-folder">modules/</span><span class="tree-comment">// feature-based modules</span></div>
+      <div class="tree-line"><span class="i3"></span><span class="tree-folder">auth/</span></div>
+      <div class="tree-line"><span class="i4"></span><span class="tree-file">auth.controller.ts</span></div>
+      <div class="tree-line"><span class="i4"></span><span class="tree-file">auth.service.ts</span></div>
+      <div class="tree-line"><span class="i4"></span><span class="tree-file">auth.routes.ts</span></div>
+      <div class="tree-line"><span class="i4"></span><span class="tree-file">auth.schema.ts</span><span class="tree-comment">// zod</span></div>
+      <div class="tree-line"><span class="i3"></span><span class="tree-folder">tasks/</span></div>
+      <div class="tree-line"><span class="i4"></span><span class="tree-file">tasks.controller.ts</span></div>
+      <div class="tree-line"><span class="i4"></span><span class="tree-file">tasks.service.ts</span></div>
+      <div class="tree-line"><span class="i4"></span><span class="tree-file">tasks.routes.ts</span></div>
+      <div class="tree-line"><span class="i4"></span><span class="tree-file">tasks.schema.ts</span></div>
+      <div class="tree-line"><span class="i3"></span><span class="tree-folder">users/</span></div>
+      <div class="tree-line"><span class="i4"></span><span class="tree-file">users.controller.ts</span></div>
+      <div class="tree-line"><span class="i4"></span><span class="tree-file">users.service.ts</span></div>
+      <div class="tree-line"><span class="i2"></span><span class="tree-folder">middleware/</span></div>
+      <div class="tree-line"><span class="i3"></span><span class="tree-file">authenticate.ts</span><span class="tree-comment">// verify JWT</span></div>
+      <div class="tree-line"><span class="i3"></span><span class="tree-file">authorize.ts</span><span class="tree-comment">// role guard</span></div>
+      <div class="tree-line"><span class="i3"></span><span class="tree-file">errorHandler.ts</span></div>
+      <div class="tree-line"><span class="i3"></span><span class="tree-file">rateLimiter.ts</span></div>
+      <div class="tree-line"><span class="i2"></span><span class="tree-folder">config/</span></div>
+      <div class="tree-line"><span class="i3"></span><span class="tree-file">db.ts</span></div>
+      <div class="tree-line"><span class="i3"></span><span class="tree-file">redis.ts</span></div>
+      <div class="tree-line"><span class="i3"></span><span class="tree-file">env.ts</span></div>
+      <div class="tree-line"><span class="i2"></span><span class="tree-folder">utils/</span></div>
+      <div class="tree-line"><span class="i3"></span><span class="tree-file">jwt.ts</span></div>
+      <div class="tree-line"><span class="i3"></span><span class="tree-file">logger.ts</span></div>
+      <div class="tree-line"><span class="i3"></span><span class="tree-file">ApiError.ts</span></div>
+      <div class="tree-line"><span class="i2"></span><span class="tree-file">app.ts</span></div>
+      <div class="tree-line"><span class="i2"></span><span class="tree-file">server.ts</span></div>
+      <div class="tree-line"><span class="i1"></span><span class="tree-folder">prisma/</span></div>
+      <div class="tree-line"><span class="i2"></span><span class="tree-file">schema.prisma</span></div>
+      <div class="tree-line"><span class="i1"></span><span class="tree-folder">frontend/</span><span class="tree-comment">// this folder</span></div>
+      <div class="tree-line"><span class="i2"></span><span class="tree-file">index.html</span></div>
+      <div class="tree-line"><span class="i2"></span><span class="tree-file">style.css</span></div>
+      <div class="tree-line"><span class="i2"></span><span class="tree-file">app.js</span></div>
+      <div class="tree-line"><span class="i1"></span><span class="tree-folder">docs/</span></div>
+      <div class="tree-line"><span class="i2"></span><span class="tree-file">postman_collection.json</span></div>
+      <div class="tree-line"><span class="i2"></span><span class="tree-file">openapi.yaml</span></div>
+      <div class="tree-line"><span class="i1"></span><span class="tree-file">docker-compose.yml</span></div>
+      <div class="tree-line"><span class="i1"></span><span class="tree-file">.env.example</span></div>
+      <div class="tree-line"><span class="i1"></span><span class="tree-file">README.md</span></div>
+    </div>
+  </div>
+
+</div>
+<script src="app.js"></script>
+</body>
+</html>
