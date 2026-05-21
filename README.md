@@ -1,3 +1,5 @@
+<img width="1904" height="966" alt="Screenshot 2026-05-21 183007" src="https://github.com/user-attachments/assets/a0c377eb-da61-430c-b519-e3d151ee63e2" />
+<img width="1910" height="971" alt="Screenshot 2026-05-21 182950" src="https://github.com/user-attachments/assets/6002f82b-0ae5-4d7a-ae8a-95d0608df48c" />
 # TaskFlow API 🚀
 
 Scalable REST API with JWT Authentication, Role-Based Access Control, and a React frontend demo.
